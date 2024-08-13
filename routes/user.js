@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 require("dotenv").config();
 
@@ -99,21 +100,12 @@ router.post("/login", async (req, res) => {
 });
 
 // 유저 정보 받아오는 로직
-router.get("/info", async (req, res) => {
-  //나중에 미들웨어가 될 accesstoken 검증식
-  const accesstoken = req.headers.authorization.replace("Bearer ", "");
-  const decode = jwt.verify(accesstoken, process.env.SECRET_KEY);
-  const now = new Date().getTime();
-
-  if (decode.exp * 1000 - now <= 0) {
-    // 만료됐다면
-    res.status(401).send();
-  } else {
-    const userInfo = await getUserInfo(decode.kakao_id);
-    const payload = userInfo.rows[0];
-    delete payload.kakao_id;
-    res.status(200).json(payload);
-  }
+router.get("/info", authMiddleware, async (req, res) => {
+  const decode = req.user;
+  const userInfo = await getUserInfo(decode.kakao_id);
+  const payload = userInfo.rows[0];
+  delete payload.kakao_id;
+  res.status(200).json(payload);
 });
 
 // 로그아웃 로직

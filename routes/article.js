@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
-
+const authMiddleware = require("../middlewares/authMiddleware");
 require("dotenv").config();
 
 const client = require("../db");
@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
   res.json(data);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   const accesstoken = req.headers.authorization.replace("Bearer ", "");
   const decode = jwt.verify(accesstoken, process.env.SECRET_KEY);
   const now = new Date().getTime();
@@ -43,12 +43,12 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/", async (req, res) => {
+router.delete("/", authMiddleware, async (req, res) => {
   try {
     const article_id = req.query.article_id;
     const user_id = req.query.user_id;
-    const accesstoken = req.headers.authorization.replace("Bearer ", "");
-    const decode = jwt.verify(accesstoken, process.env.SECRET_KEY);
+    const decode = req.user;
+
     if (decode.id == user_id) {
       const response = await client.query("DELETE FROM article WHERE id=$1", [
         article_id,
@@ -57,6 +57,11 @@ router.delete("/", async (req, res) => {
         res.status(404).send({ message: "Resource not found" });
       }
       res.status(200).send({ message: "Successfully Deleted!" });
+    } else {
+      res.status(403).json({
+        status: 403,
+        message: "You do not have permission to delete this post.",
+      });
     }
   } catch (err) {
     console.log(err);
