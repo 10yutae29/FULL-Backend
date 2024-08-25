@@ -43,6 +43,23 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.put("/:id", authMiddleware, async (req, res) => {
+  try {
+    const decode = req.user;
+    // body에 게시글 작성자
+    const article_id = req.params.id;
+    const response = await client.query(
+      "UPDATE article SET title = $1, content = $2 WHERE id=$3 AND writer_id=$4 RETURNING *",
+      [req.body.title, req.body.content, article_id, decode.id]
+    );
+    if (!response)
+      res.status({ message: "게시물을 찾을 수 없거나 권한이 없습니다." });
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ message: "서버에러", err });
+  }
+});
+
 router.delete("/", authMiddleware, async (req, res) => {
   try {
     const article_id = req.query.article_id;
@@ -66,7 +83,6 @@ router.delete("/", authMiddleware, async (req, res) => {
   } catch (err) {
     console.log(err);
   }
-  // const now = new Date().getTime();
 });
 
 module.exports = router;

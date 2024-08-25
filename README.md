@@ -1,6 +1,9 @@
 ## 목적
 
-프론트엔드 
+- express.js 활용한 백엔드 기초 학습
+- JWT 기반 인증 적용
+- OAuth 2.0 구현 및 인증 흐름 학습
+- CRUD API 개발 및 RESTful 서비스 구축
 
 
 
@@ -57,3 +60,12 @@ jsonwebtoken
   - 응답의 data.action 값으로 access_token 만료시엔 3, refresh_token 만료시엔 4를 반환
   - 프론트에서 API 요청 시 응답으로 {status: 401, action: 3}을 받으면 refresh_token으로 access_token을 재발급 받고, 재발급 받은 access_token으로 다시 API 요청
   - refresh_token으로 access_token 재발급 API 응답으로 {status: 401, action: 4} 받으면 프론트에서 로그아웃 
+
+
+
+8/24
+
+- 게시글 수정 API 개발
+  - 수정 권한 검사를 위해 API 요청 유저와 게시글 작성 유저 ID 비교
+  - 이전 게시글 조회에서 보낸 게시글 작성 유저 ID와 비교하면 데이터 조작으로인해 잘못된 권한 인증이 될 수 있음
+  - 때문에 게시글 ID를 통해 해당 게시글 작성자 ID를 DB에서 비교한 후 수정 권한 확인
